@@ -1,0 +1,110 @@
+public class ClosestPairDC {
+
+	public final static double INF = java.lang.Double.POSITIVE_INFINITY;
+
+	//
+	// findClosestPair()
+	//
+	// Given a collection of nPoints points, find and ***print***
+	//  * the closest pair of points
+	//  * the distance between them
+	// in the form "DC (x1, y1) (x2, y2) distance"
+	//
+
+	// INPUTS:
+	//  - points sorted in nondecreasing order by X coordinate
+	//  - points sorted in nondecreasing order by Y coordinate
+	//
+
+	public static void findClosestPair(XYPoint pointsByX[], 
+			XYPoint pointsByY[],
+			boolean print)
+	{
+		int nPoints = pointsByX.length;
+
+		//
+		// Your code goes here!
+		//
+
+		Object[] answer = findClosestPairHelper(pointsByX, pointsByY, nPoints);
+
+
+		if (print)
+			System.out.println("DC " + answer[0].toString() + " " + answer[1].toString() + " " + answer[2].toString());
+	}
+
+	public static Object[] findClosestPairHelper(XYPoint pointsByX[], XYPoint pointsByY[], int n) {
+		if(n == 1) {
+			Object a[] = {pointsByX[0], pointsByX[0], INF};
+			return a;
+		}
+		else if(n == 2) {
+			Object b[] = {pointsByX[0], pointsByX[1], new Double(pointsByX[0].dist(pointsByX[1]))};
+			return b;
+		}
+		int mid = (n/2 - 1);
+		XYPoint XL[] = new XYPoint[mid+1];
+		XYPoint XR[] = new XYPoint[n-mid-1];
+		XYPoint YL[] = new XYPoint[mid+1];
+		XYPoint YR[] = new XYPoint[n-mid-1];
+		for(int i = 0; i<mid+1; i++) {
+			XL[i] = pointsByX[i];
+		}
+		for(int i = mid+1; i<n; i++) {
+			XR[i-mid-1] = pointsByX[i];
+		}
+		int indexL = 0;
+		int indexR = 0;
+		for(XYPoint a : pointsByY) {
+			if(a.isLeftOf(XR[0])) {
+				YL[indexL] = a;
+				indexL++;
+			}
+			else {
+				YR[indexR] = a;
+				indexR++;
+			}
+		}
+		Object[] distL = findClosestPairHelper(XL, YL, mid+1);
+		Object[] distR = findClosestPairHelper(XR, YR, n-mid-1);
+		double lrDist;
+		Object answer[] = new Object[3];
+		if((double)distL[2]<(double)distR[2]) {
+			lrDist = (double)distL[2];
+			answer[0] = distL[0];
+			answer[1] = distL[1];
+		}
+		else {
+			lrDist = (double)distR[2];
+			answer[0] = distR[0];
+			answer[1] = distR[1];
+		}
+		answer[2] = lrDist;
+		XYPoint yStrip[] = new XYPoint[pointsByY.length];
+		int count = 0;
+		for(int i = 0; i<pointsByY.length; i++) {
+			if(Math.abs(pointsByY[i].x - pointsByX[mid].x) < lrDist) {
+				yStrip[count] = pointsByY[i];
+				count++;
+			}
+		}
+		double minDist = lrDist;
+		double d = 0;
+		for(int j = 0; j < count; j++) {
+			int k = j+1;
+			while(k <= count - 1 && yStrip[k].y - yStrip[j].y < lrDist) {
+				d = yStrip[j].dist(yStrip[k]);
+				if(d < minDist) {
+					minDist = d;
+					answer[0] = yStrip[j];
+					answer[1] = yStrip[k];
+					answer[2] = minDist;
+				}
+				k++;
+			}
+		}
+
+		return answer;
+
+	}
+}
